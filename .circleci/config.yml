@@ -80,6 +80,8 @@ jobs:
           command: cd udagram && cd udagram-frontend && npm run eb_init
           name: create sample eb
           command: cd udagram && cd udagram-frontend && npm run eb_sample
+          name: add eb environment variables
+          command: cd udagram && cd udagram-api && eb setenv echo $POSTGRES_USERNAME  && echo $POSTGRES_PASSWORD && echo $POSTGRES_HOST && echo $POSTGRES_DB=postgres   && echo $AWS_BUCKET  && echo $AWS_REGION  && echo $AWS_PROFILE  && echo $JWT_SECRET &&  echo $URL
           name: build www/Archive.zip (app)
           command: cd udagram && cd udagram-frontend && npm run api:build
           name: Deploy api
