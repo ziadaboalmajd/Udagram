@@ -5,14 +5,14 @@ triggered, and a series of events are executed.
 
 This series of CircleCI pipeline events include:
 
-• a Docker container is set up
-• * Node JS is set up inside the container
-• Dependencies are installed
-• AWS command line interfaces are set up
-• * Environment secrets are read from inside Circleci
-• The front-end dependencies are installed
-• The front-end is built
-• The back-end dependencies are installed
-• The back-end is built
-• The back-end is deployed to Elastic Beanstalk inside AWS
-• The front-end is deployed to S3 inside AWS
+- a Docker container is set up
+- Node JS is set up inside the container
+- Dependencies are installed
+- AWS command line interfaces are set up
+- Environment secrets are read from inside Circleci
+- The front-end dependencies are installed
+- The front-end is built
+- The back-end dependencies are installed
+- The back-end is built
+- The back-end is deployed to Elastic Beanstalk inside AWS
+- The front-end is deployed to S3 inside AWS
