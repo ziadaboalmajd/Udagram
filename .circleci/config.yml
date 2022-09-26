@@ -1,0 +1,102 @@
+version: 2.1
+orbs:
+  # orgs contain basc recipes and reproducible actions (install node, aws, etc.)
+  node: circleci/node@5.0.2
+  eb: circleci/aws-elastic-beanstalk@2.0.1
+  aws-cli: circleci/aws-cli@3.1.1
+  # different jobs are calles later in the workflows sections
+jobs:
+
+  build:
+
+    docker:
+      # the base image can run most needed actions with orbs
+      - image: "cimg/node:14.15"
+    steps:
+
+      - run: 
+          name: install all dependencies
+          comand: cd udagram && cd udagram-frontend && npm install
+      
+      - run: 
+        name: Run build (front end)
+        comand: cd udagram && cd udagram-frontend && npm run build
+      # install node and checkout code
+      - node/install:
+          node-version: '14.15'         
+      - checkout
+      # Use root level package.json to install dependencies in the frontend app
+
+      - run:
+          name: Install Front-End Dependencies
+          command: |
+            echo "NODE --version" 
+            echo $(node --version)
+            echo "NPM --version" 
+            echo $(npm --version)
+            npm run frontend:install
+
+      - run:
+          name: Install awscli
+          command: |
+            pip3 install awscli 
+
+      - run: 
+        name: uplaod front buket
+        comand: aws s3 cp udagram-frontend/www s3://${AWS_BUCKET}/ --recursive
+
+      steps:
+      - checkout
+      - eb/setup
+      - run: 
+        name: install backend dependencies
+        comand: cd udagram-api && npm install
+      - run: 
+          name: run build (backend)
+          comand: cd udagram-api && npm run build
+
+      - run: 
+        name: deploy api 
+        comand: cd udagram-api && npm run deploy
+
+  # deploy step will run only after manual approval
+  deploy:
+    docker:
+      - image: "cimg/base:stable"
+      # more setup needed for aws, node, elastic beanstalk
+    steps:
+      - node/install:
+          node-version: '14.15' 
+      - eb/setup
+      - aws-cli/setup
+      - checkout
+      - run:
+          name: build app
+          command: cd udagram && cd udagram-frontend && npm run build
+          name: Deploy front end
+          command: cd udagram && cd udagram-frontend && npm run deploy
+      - run:
+          name: create eb 
+          command: cd udagram && cd udagram-frontend && npm run eb_init
+          name: create sample eb
+          command: cd udagram && cd udagram-frontend && npm run eb_sample
+          name: build www/Archive.zip (app)
+          command: cd udagram && cd udagram-frontend && npm run api:build
+          name: Deploy api
+          command: cd udagram && cd udagram-frontend && npm run api:deploy
+            
+workflows:
+  udagram:
+    jobs:
+      - build
+      - hold:
+          filters:
+            branches:
+              only:
+                - master
+          type: approval
+          requires:
+            - build
+      - deploy:
+          requires:
+            - hold
